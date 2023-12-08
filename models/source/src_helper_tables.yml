@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: helper_tables
+    database: sliide-grip-prod
+    schema: mdm_helper_tables
+    tables:
+      - name: event_config_new
