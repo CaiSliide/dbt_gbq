@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: content_app_prod
+    database: content-apps-prod  
+    schema: analytics_338029231  
+    tables:
+      - name: events_*
