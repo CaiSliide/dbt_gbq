@@ -1,3 +1,4 @@
+
 with content_app_prod as (
     select  
         event_date,

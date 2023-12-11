@@ -1,0 +1,104 @@
+version: 2
+
+sources:
+  - name: content_app_prod
+    database: content-apps-prod  
+    schema: analytics_338029231  
+    tables:
+      - name: events_*
+        description: >
+            Content App Firbase events, except T-Mobile Content App events. Sharded tables by date.
+        columns:
+          - name: event_date
+            description: ''
+          - name: event_timestamp
+            description: ''
+          - name: event_name
+            description: ''
+          - name: event_params
+            description: ''
+          - name: event_previous_timestamp
+            description: ''
+          - name: event_value_in_usd
+            description: ''
+          - name: event_bundle_sequence_id
+            description: ''
+          - name: event_server_timestamp_offset
+            description: ''
+          - name: user_id
+            description: ''
+          - name: user_pseudo_id
+            description: ''
+          - name: privacy_info
+            description: ''
+          - name: user_properties
+            description: ''
+          - name: user_ltv
+            description: ''
+          - name: device
+            description: ''
+          - name: geo
+            description: ''
+          - name: app_info
+            description: ''
+          - name: traffic_source
+            description: ''
+          - name: stream_id
+            description: ''
+          - name: platform
+            description: ''
+          - name: event_dimensions
+            description: ''
+          - name: ecommerce
+            description: ''
+
+  - name: content_app_tmobile_prod
+    database: contentapp-tmobile-prod  
+    schema: analytics_353101580  
+    tables:
+      - name: events_*
+        description: >
+            Content App Firbase events for T-Mobile. Sharded tables by date.
+        columns:
+          - name: event_date
+            description: ''
+          - name: event_timestamp
+            description: ''
+          - name: event_name
+            description: ''
+          - name: event_params
+            description: ''
+          - name: event_previous_timestamp
+            description: ''
+          - name: event_value_in_usd
+            description: ''
+          - name: event_bundle_sequence_id
+            description: ''
+          - name: event_server_timestamp_offset
+            description: ''
+          - name: user_id
+            description: ''
+          - name: user_pseudo_id
+            description: ''
+          - name: privacy_info
+            description: ''
+          - name: user_properties
+            description: ''
+          - name: user_ltv
+            description: ''
+          - name: device
+            description: ''
+          - name: geo
+            description: ''
+          - name: app_info
+            description: ''
+          - name: traffic_source
+            description: ''
+          - name: stream_id
+            description: ''
+          - name: platform
+            description: ''
+          - name: event_dimensions
+            description: ''
+          - name: ecommerce
+            description: ''
