@@ -6,7 +6,7 @@
 
 with 
 active_events as (
-    select event_name from {{ ref('stg_event_config') }} where is_active = True
+    select event_name from {{ ref('event_config') }} where is_active = True
 ),
 source_events as (
     select 

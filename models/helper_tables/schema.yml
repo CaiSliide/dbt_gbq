@@ -6,3 +6,5 @@ sources:
     schema: mdm_helper_tables
     tables:
       - name: event_config_new
+      - name: session_parameters
+      - name: client_mapping_events
