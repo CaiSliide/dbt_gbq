@@ -1,3 +1,9 @@
+{{
+    config(
+        materialized='incremental',
+        unique_key='event_date') 
+}}
+
 {% set product = 'contentapp' %}
 
 with session_events as (
@@ -37,7 +43,11 @@ with session_events as (
         {{ source('content_app_prod', 'events_*')}}
     where
         event_name in (select distinct event_name from session_events)
-        and _table_suffix = FORMAT_DATE('%Y%m%d', CURRENT_DATE() - 3) 
+        {% if is_incremental() %}
+        -- this filter will only be applied on an incremental run
+        -- will append/replace values for yesterday, and the previous 2 days only
+        where _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', CURRENT_DATE() - 3) AND FORMAT_DATE('%Y%m%d', CURRENT_DATE())
+        {% endif %}
 )
 , session_id_calc as (
     select
