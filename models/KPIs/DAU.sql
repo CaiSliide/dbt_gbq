@@ -1,4 +1,4 @@
-{{
+{# {{
     config(
         materialized='incremental',
         unique_key='event_date') 
@@ -40,3 +40,4 @@ group by
     event_date
 order by 
     event_date
+#}

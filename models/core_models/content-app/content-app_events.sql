@@ -1,9 +1,14 @@
 {{
-    config(materialized="incremental", unique_key="event_date"), partition_by = {
-        "field": "event_date",
-        "data_type": "date",
-        "granularity": "day",
-    }, cluster_by = (["app_info_id", "app_info_version", "event_name"],)
+    config(
+        materialized="incremental",
+        partition_by={
+            "field": "event_date",
+            "data_type": "date",
+            "granularity": "day",
+        },
+        cluster_by=["app_info_id", "app_info_version", "event_name"],
+        pre_hook="delete from {{ this }} where event_date = current_date() - 3",
+    ) 
 }}
 
 {% set product = "contentapp" %}
@@ -15,15 +20,11 @@ with
         {% if is_incremental() %}
             -- this filter will only be applied on an incremental run
             -- will append/replace values for yesterday, and the previous 2 days only
-            where
-                _table_suffix
-                between format_date('%Y%m%d', current_date() - 3) and format_date(
-                    '%Y%m%d', current_date()
-                )
+            where _table_suffix = format_date('%Y%m%d', current_date() - 3)
         {% else %}
             where
                 _table_suffix
-                between '20231210' and format_date('%Y%m%d', current_date())
+                between '20231215' and format_date('%Y%m%d', current_date())
         {% endif %}
 
         union all
@@ -33,15 +34,11 @@ with
         {% if is_incremental() %}
             -- this filter will only be applied on an incremental run
             -- will append/replace values for yesterday, and the previous 2 days only
-            where
-                _table_suffix
-                between format_date('%Y%m%d', current_date() - 3) and format_date(
-                    '%Y%m%d', current_date()
-                )
+            where _table_suffix = format_date('%Y%m%d', current_date() - 3)
         {% else %}
             where
                 _table_suffix
-                between '20231210' and format_date('%Y%m%d', current_date())
+                between '20231215' and format_date('%Y%m%d', current_date())
         {% endif %}
     ),
     session_events as (
@@ -89,6 +86,18 @@ with
             end session_id,
             *
         from selecting_raw_events
+    ),
+    event_id_calc as (
+        select
+            farm_fingerprint(
+                concat(user_pseudo_id, event_timestamp, event_name)
+            ) event_id,
+            *
+        from session_id_calc
+    ),
+    dup_events as (
+        select row_number() over (partition by event_id) as event_num, *
+        from event_id_calc
     )
 select
     last_value(session_id ignore nulls) over (
@@ -96,5 +105,6 @@ select
         order by event_timestamp, event_bundle_sequence_id
     ) session_id,
     parse_date('%Y%m%d', event_date) event_date,
-    * except (event_date, session_id, first_event_in_session)
-from session_id_calc
+    * except (event_date, session_id, first_event_in_session, event_num)
+from dup_events
+where event_num = 1
