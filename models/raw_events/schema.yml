@@ -1,7 +1,7 @@
 version: 2
 
 sources:
-  - name: content_app_prod
+  - name: content-app_prod
     database: content-apps-prod  
     schema: analytics_338029231  
     tables:
@@ -52,7 +52,7 @@ sources:
           - name: ecommerce
             description: ''
 
-  - name: content_app_tmobile_prod
+  - name: content-app_tmobile_prod
     database: contentapp-tmobile-prod  
     schema: analytics_353101580  
     tables:
