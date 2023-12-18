@@ -128,20 +128,6 @@ with
                 )
             ) row_uid
         from raw_events
-        {% if is_incremental() %}
-            -- this filter will only be applied on an incremental run
-            -- will append/replace values for yesterday, and the previous 2 days only
-            where
-                _table_suffix
-                between format_date('%Y%m%d', current_date() - 3) and format_date(
-                    '%Y%m%d', current_date()
-                )
-        {% else %}
-            where
-                _table_suffix
-                between '20231210' and format_date('%Y%m%d', current_date())
-
-        {% endif %}
     ),
     cm as (
         select
