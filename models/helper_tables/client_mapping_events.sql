@@ -11,7 +11,7 @@ with client_mapping_events as (
         tstmp_added, 
         tstmp_updated
     from 
-        {{ source('helper_tables', 'client_mapping_events')}}
+        {{ source('helper_tables', 'client_mapping_events') }}
 )
 
 select * from client_mapping_events
