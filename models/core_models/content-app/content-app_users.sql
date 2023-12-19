@@ -27,7 +27,7 @@ with
         {% else %}
             where
                 _table_suffix
-                between '20231210' and format_date('%Y%m%d', current_date())
+                between '20231001' and format_date('%Y%m%d', current_date())
         {% endif %}
 
         union all
@@ -45,7 +45,7 @@ with
         {% else %}
             where
                 _table_suffix
-                between '20231210' and format_date('%Y%m%d', current_date())
+                between '20231001' and format_date('%Y%m%d', current_date())
         {% endif %}
     ),
     active_events as (
