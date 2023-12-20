@@ -20,11 +20,13 @@ with
         {% if is_incremental() %}
             -- this filter will only be applied on an incremental run
             -- will append/replace values for yesterday, and the previous 2 days only
-            where _table_suffix = format_date('%Y%m%d', current_date() - 3)
+            -- where _table_suffix = format_date('%Y%m%d', current_date() - 3)
+            where _table_suffix between '20231101' and '20231130'
         {% else %}
             where
                 _table_suffix
-                between '20231215' and format_date('%Y%m%d', current_date())
+                -- between '20231001' and format_date('%Y%m%d', current_date())
+                between '20231001' and '20231031'
         {% endif %}
 
         union all
@@ -34,11 +36,13 @@ with
         {% if is_incremental() %}
             -- this filter will only be applied on an incremental run
             -- will append/replace values for yesterday, and the previous 2 days only
-            where _table_suffix = format_date('%Y%m%d', current_date() - 3)
+            -- where _table_suffix = format_date('%Y%m%d', current_date() - 3)
+            where _table_suffix between '20231101' and '20231218'
         {% else %}
             where
                 _table_suffix
-                between '20231215' and format_date('%Y%m%d', current_date())
+                -- between '20231001' and format_date('%Y%m%d', current_date())
+                between '20231001' and '20231031'
         {% endif %}
     ),
     session_events as (
@@ -94,10 +98,6 @@ with
             ) event_id,
             *
         from session_id_calc
-    ),
-    dup_events as (
-        select row_number() over (partition by event_id) as event_num, *
-        from event_id_calc
     )
 select
     last_value(session_id ignore nulls) over (
@@ -105,6 +105,6 @@ select
         order by event_timestamp, event_bundle_sequence_id
     ) session_id,
     parse_date('%Y%m%d', event_date) event_date,
-    * except (event_date, session_id, first_event_in_session, event_num)
-from dup_events
-where event_num = 1
+    * except (event_date, session_id, first_event_in_session)
+from event_id_calc
+

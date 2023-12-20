@@ -24,10 +24,7 @@ with
                 between format_date('%Y%m%d', current_date() - 3) and format_date(
                     '%Y%m%d', current_date()
                 )
-        {% else %}
-            where
-                _table_suffix
-                between '20231001' and format_date('%Y%m%d', current_date())
+        {% else %} where _table_suffix between '20231001' and '20231031'
         {% endif %}
 
         union all
@@ -42,10 +39,7 @@ with
                 between format_date('%Y%m%d', current_date() - 3) and format_date(
                     '%Y%m%d', current_date()
                 )
-        {% else %}
-            where
-                _table_suffix
-                between '20231001' and format_date('%Y%m%d', current_date())
+        {% else %} where _table_suffix between '20231001' and '20231031'
         {% endif %}
     ),
     active_events as (
@@ -193,6 +187,14 @@ with
             ) row_uid
         from selecting_raw_events
     ),
+    first_row as (
+        select distinct
+            user_pseudo_id,
+            first_value(row_uid) over (
+                partition by user_pseudo_id order by event_timestamp
+            ) row_uid
+        from selecting_raw_events
+    ),
     int_events as (
         select
             user_pseudo_id,
@@ -255,9 +257,9 @@ with
             google_advertising_id,
             app_info_id,
             app_family_name,
+            app_version_string as app_version_last_seen_string,
+            app_version_int as app_version_last_seen_int,
             install_source,
-            app_version_string as app_version_first_seen_string,
-            app_version_int as app_version_first_seen_int,
             device_type,
             device_make,
             device_model,
@@ -271,12 +273,19 @@ with
             location_state,
             location_city,
             event_name as last_seen_event,
-            timestamp_micros(event_timestamp) as last_seen_event_timestamp,
+            timestamp_micros(event_timestamp) as last_seen_event_timestamp
         from int_events
         inner join last_row using (user_pseudo_id, row_uid)
-    )
-{% if is_incremental() %}
-        ,
+    ),
+    oldest_data as (
+        select
+            user_pseudo_id,
+            app_version_string as app_version_first_seen_string,
+            app_version_int as app_version_first_seen_int
+        from int_events
+        inner join first_row using (user_pseudo_id, row_uid)
+    ),
+    {% if is_incremental() %}
         historic_compare as (
             select
                 user_pseudo_id,
@@ -295,25 +304,65 @@ with
                 case
                     when his.acquisition_date < activity.acquisition_date
                     then his.app_version_first_seen_string
-                    else latest_data.app_version_first_seen_string
+                    else oldest_data.app_version_first_seen_string
                 end as app_version_first_seen_string,
                 case
                     when his.acquisition_date < activity.acquisition_date
                     then his.app_version_first_seen_int
-                    else latest_data.app_version_first_seen_int
+                    else oldest_data.app_version_first_seen_int
                 end as app_version_first_seen_int
             from activity
             left join historic_user_core his using (user_pseudo_id)
-            inner join latest_data using (user_pseudo_id)
-        )
+            inner join oldest_data using (user_pseudo_id)
+        ),
+    {% endif %}
 
-    select
-        h.*,
-        d.* except (
-            user_pseudo_id, app_version_first_seen_string, app_version_first_seen_int
-        )
-    from historic_compare h
-{% else %} select a.*, d.* except (user_pseudo_id) from activity a
-{% endif %}
+    final as (
+        {% if is_incremental() %}
+            select
+                h.*,
+                l.* except (
+                    user_pseudo_id,
+                    app_version_first_seen_string,
+                    app_version_first_seen_int
+                )
+            from historic_compare h
+        {% else %}
+            select a.*, l.* except (user_pseudo_id), o.* except (user_pseudo_id)
+            from activity a
+            inner join oldest_data o using (user_pseudo_id)
+        {% endif %}
+        inner join latest_data l using (user_pseudo_id)
+    )
 
-inner join latest_data d using (user_pseudo_id)
+select
+    user_pseudo_id,
+    acquisition_date,
+    activation_date,
+    last_seen_date,
+    last_active_date,
+    last_seen_event,
+    last_seen_event_timestamp,
+    app_family_name,
+    app_info_id,
+    app_version_first_seen_string,
+    app_version_first_seen_int,
+    app_version_last_seen_string,
+    app_version_last_seen_int,
+    device_id,
+    sliide_backend_profile_id,
+    google_advertising_id,
+    install_source,
+    device_type,
+    device_make,
+    device_model,
+    device_screen_size_x,
+    device_screen_size_y,
+    device_os,
+    device_os_version,
+    device_language,
+    tz_offset_hours,
+    location_country,
+    location_state,
+    location_city
+from final
