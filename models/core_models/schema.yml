@@ -2,13 +2,14 @@ version: 2
 
 models:
   - name: content-app_users
+    description: 'test model name'
     columns:
       - name: user_pseudo_id
         data_type: string
-        description: 'test'
+        description: '{{ doc("user_pseudo_id") }}'
       - name: acquisition_date
         data_type: 'date'
-        description: ''
+        description: '{{ doc("acquisition_date") }}'
       - name: last_seen_date
         data_type: 'date'
         description: ''

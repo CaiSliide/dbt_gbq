@@ -5,7 +5,7 @@ with event_config as (
         is_session,
         is_active
     from 
-        {{ source('helper_tables', 'event_config_new')}}
+        {{ source('helper_tables', 'event_config_new') }}
 )
 
 select * from event_config
