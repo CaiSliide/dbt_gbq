@@ -8,3 +8,16 @@ sources:
       - name: event_config_new
       - name: session_parameters
       - name: client_mapping_events
+      - name: client_mapping
+
+models:
+  - name: client_mapping_events_version
+    description: ''
+    tests:
+      - unique:
+          column_name: "(app_package_name || '-' || product)"
+    columns:
+      - name: product
+        description: ''
+        tests:
+          - not_null
