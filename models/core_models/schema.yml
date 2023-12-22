@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: content-app_users
-    description: 'test model name'
+    description: 'Core model for content-app users'
     columns:
       - name: user_pseudo_id
         data_type: string
@@ -11,79 +11,196 @@ models:
         data_type: 'date'
         description: '{{ doc("acquisition_date") }}'
       - name: last_seen_date
-        data_type: 'date'
-        description: ''
+        data_type: date
+        description: '{{ doc("last_seen_date") }}'
       - name: activation_date
-        data_type: 'date'
-        description: ''
+        data_type: date
+        description: '{{ doc("activation_date") }}'
       - name: last_active_date
-        data_type: 'date'
-        description: ''
+        data_type: date
+        description: '{{ doc("last_active_date") }}'
       - name: device_id
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("device_id") }}'
       - name: sliide_backend_profile_id
-        data_type: 'string'
+        data_type: string
         description: ''
       - name: google_advertising_id
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("google_advertising_id") }}'
       - name: app_info_id
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("app_info_id") }}'
       - name: app_family_name
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("app_family_name") }}'
       - name: install_source
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("install_source") }}'
       - name: app_version_first_seen_string
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("app_version_first_seen") }}'
       - name: app_version_first_seen_int
-        data_type: 'integer'
-        description: ''
+        data_type: integer
+        description: '{{ doc("app_version_first_seen") }}'
       - name: device_type
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("device_type") }}'
       - name: device_make
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("device_make") }}'
       - name: device_model
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("device_model") }}'
       - name: device_screen_size_x
-        data_type: 'integer'
-        description: ''
+        data_type: integer
+        description: '{{ doc("device_screen_size") }}'
       - name: device_screen_size_y
-        data_type: 'integer'
-        description: ''
+        data_type: integer
+        description: '{{ doc("device_screen_size") }}'
       - name: device_os
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("device_os") }}'
       - name: device_os_version
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("device_os_version") }}'
       - name: device_language
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("device_os_version") }}'
       - name: tz_offset_hours
-        data_type: 'float'
+        data_type: float
         description: ''
       - name: location_country
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("location_country") }}'
       - name: location_state
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("location_state") }}'
       - name: location_city
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("location_city") }}'
       - name: last_seen_event
-        data_type: 'string'
-        description: ''
+        data_type: string
+        description: '{{ doc("last_seen_event") }}'
       - name: last_seen_event_timestamp
-        data_type: 'timestamp'
-        description: ''
+        data_type: timestamp
+        description: '{{ doc("last_seen_event_timestamp") }}'
 
   - name: content-app_events
+    description: 'Core model for content-app events'
+    columns:
+      - name: session_id
+        data_type: integer
+        description: '{{ doc("session_id") }}'
+      - name: event_date
+        data_type: date
+        description: '{{ doc("event_date") }}'
+      - name: event_id
+        data_type: integer
+        description: '{{ doc("event_id") }}'
+      - name: app_info_id
+        data_type: string
+        description: '{{ doc("app_info_id") }}'
+      - name: app_info_version
+        data_type: string
+        description: '{{ doc("app_info_version") }}'
+      - name: firebase_app_id
+        data_type: string
+        description: '{{ doc("firebase_app_id") }}'
+      - name: install_source
+        data_type: string
+        description: '{{ doc("install_source") }}'
+      - name: event_timestamp
+        data_type: integer
+        description: '{{ doc("event_timestamp") }}'
+      - name: event_name
+        data_type: string
+        description: '{{ doc("event_name") }}'
+      - name: event_params
+        data_type: record
+        description: '{{ doc("event_params") }}'
+      - name: event_previous_timestamp
+        data_type: integer
+        description: '{{ doc("event_previous_timestamp") }}'
+      - name: event_bundle_sequence_id
+        data_type: integer
+        description: ''
+      - name: event_server_timestamp_offset
+        data_type: integer
+        description: ''
+      - name: user_id
+        data_type: string
+        description: '{{ doc("user_id") }}'
+      - name: user_pseudo_id
+        data_type: string
+        description: '{{ doc("user_pseudo_id") }}'
+      - name: privacy_info
+        data_type: record
+        description: '{{ doc("privacy_info") }}'
+      - name: user_properties
+        data_type: record
+        description: '{{ doc("user_properties") }}'
+      - name: user_first_touch_timestamp
+        data_type: integer
+        description: ''
+
+  - name: content-app_sessions
+    description: 'Core model for content-app user sessions'
+    columns:
+      - name: session_id
+        data_type: integer
+        description: '{{ doc("session_id") }}'
+      - name: user_pseudo_id
+        data_type: string
+        description: '{{ doc("user_pseudo_id") }}'
+      - name: session_start_date
+        data_type: date
+        description: '{{ doc("session_start_date") }}'
+      - name: session_start_timestamp
+        data_type: timestamp
+        description: '{{ doc("session_start_timestamp") }}'
+      - name: session_end_timestamp
+        data_type: timestamp
+        description: '{{ doc("session_end_timestamp") }}'
+      - name: device_type
+        data_type: string
+        description: '{{ doc("device_type") }}'
+      - name: device_make
+        data_type: string
+        description: '{{ doc("device_make") }}'
+      - name: device_model
+        data_type: string
+        description: '{{ doc("device_model") }}'
+      - name: device_os
+        data_type: string
+        description: '{{ doc("device_os") }}'
+      - name: device_os_version
+        data_type: string
+        description: '{{ doc("device_os_version") }}'
+      - name: location_country
+        data_type: string
+        description: '{{ doc("location_country") }}'
+      - name: location_state
+        data_type: string
+        description: '{{ doc("location_state") }}'
+      - name: location_city
+        data_type: string
+        description: '{{ doc("location_city") }}'
+      - name: app_package_name
+        data_type: string
+        description: '{{ doc("app_info_id") }}'
+      - name: app_family_name
+        data_type: string
+        description: '{{ doc("app_family_name") }}'
+      - name: app_version_string
+        data_type: string
+        description: '{{ doc("app_info_version") }}'
+      - name: app_version_int
+        data_type: integer
+        description: '{{ doc("app_info_version") }}'
+      - name: tz_offset_hours
+        data_type: float
+        description: ''
+      - name: is_active_session
+        data_type: boolean
+        description: '{{ doc("is_active_session") }}'
