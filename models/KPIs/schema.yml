@@ -2,7 +2,7 @@
 version: 2
 
 models:
-    - name: DAU
+    - name: content-app_DAU
       description: "Daily Actyive Users (DAU) per day by product"
       columns:
           - name: event_date
