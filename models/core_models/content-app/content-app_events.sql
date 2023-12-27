@@ -7,8 +7,8 @@
             "granularity": "day",
         },
         cluster_by=["app_info_id", "app_info_version", "event_name"],
-        pre_hook="delete from {{ this }} where event_date = current_date() - 3",
-    ) 
+        pre_hook="{% if is_incremental() %} delete from {{ this }} where event_date between PARSE_DATE('%Y%m%d', '{{ var('start_date') }}') and PARSE_DATE('%Y%m%d', '{{ var('end_date') }}') {% endif %}",
+    )
 }}
 
 {% set product = "contentapp" %}
@@ -19,9 +19,9 @@ with
         from {{ source("content-app_prod", "events_*") }}
         {% if is_incremental() %}
             -- this filter will only be applied on an incremental run
-            -- will append/replace values for yesterday, and the previous 2 days only
-            -- where _table_suffix = format_date('%Y%m%d', current_date() - 3)
-            where _table_suffix between '20231101' and '20231130'
+            where
+                _table_suffix
+                between '{{ var("start_date") }}' and '{{ var("end_date") }}'
         {% else %}
             where
                 _table_suffix
@@ -35,9 +35,9 @@ with
         from {{ source("content-app_tmobile_prod", "events_*") }}
         {% if is_incremental() %}
             -- this filter will only be applied on an incremental run
-            -- will append/replace values for yesterday, and the previous 2 days only
-            -- where _table_suffix = format_date('%Y%m%d', current_date() - 3)
-            where _table_suffix between '20231101' and '20231218'
+            where
+                _table_suffix
+                between '{{ var("start_date") }}' and '{{ var("end_date") }}'
         {% else %}
             where
                 _table_suffix
@@ -107,4 +107,3 @@ select
     parse_date('%Y%m%d', event_date) event_date,
     * except (event_date, session_id, first_event_in_session)
 from event_id_calc
-
