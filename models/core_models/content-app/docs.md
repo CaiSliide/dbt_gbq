@@ -170,7 +170,7 @@ Last seen state value for the user_pseudo_id.
 Last seen city value for the user_pseudo_id.
 {% enddocs %}
 
-{% docs device_id %}
+{% docs last_seen_device_id %}
 Backend generated id for each device. This corresponds to the user_id from the event stream data.
 {% enddocs %}
 

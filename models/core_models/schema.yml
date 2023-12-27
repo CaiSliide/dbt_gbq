@@ -19,66 +19,66 @@ models:
       - name: last_active_date
         data_type: date
         description: '{{ doc("last_active_date") }}'
-      - name: device_id
+      - name: last_seen_device_id
         data_type: string
-        description: '{{ doc("device_id") }}'
-      - name: sliide_backend_profile_id
+        description: '{{ doc("last_seen_device_id") }}'
+      - name: last_seen_sliide_backend_profile_id
         data_type: string
         description: ''
-      - name: google_advertising_id
+      - name: last_seen_google_advertising_id
         data_type: string
-        description: '{{ doc("google_advertising_id") }}'
-      - name: app_info_id
+        description: ''
+      - name: last_seen_app_info_id
         data_type: string
-        description: '{{ doc("app_info_id") }}'
-      - name: app_family_name
+        description: ''
+      - name: last_seen_app_family_name
         data_type: string
-        description: '{{ doc("app_family_name") }}'
-      - name: install_source
+        description: ''
+      - name: last_seen_install_source
         data_type: string
-        description: '{{ doc("install_source") }}'
+        description: '{{ doc("last_seen_install_source") }}'
       - name: app_version_first_seen_string
         data_type: string
         description: '{{ doc("app_version_first_seen") }}'
       - name: app_version_first_seen_int
         data_type: integer
         description: '{{ doc("app_version_first_seen") }}'
-      - name: device_type
+      - name: last_seen_device_type
         data_type: string
-        description: '{{ doc("device_type") }}'
-      - name: device_make
+        description: '{{ doc("last_seen_device_type") }}'
+      - name: last_seen_device_make
         data_type: string
-        description: '{{ doc("device_make") }}'
-      - name: device_model
+        description: '{{ doc("last_seen_device_make") }}'
+      - name: last_seen_device_model
         data_type: string
-        description: '{{ doc("device_model") }}'
-      - name: device_screen_size_x
+        description: '{{ doc("last_seen_device_model") }}'
+      - name: last_seen_device_screen_size_x
         data_type: integer
-        description: '{{ doc("device_screen_size") }}'
-      - name: device_screen_size_y
+        description: '{{ doc("last_seen_device_screen_size") }}'
+      - name: last_seen_device_screen_size_y
         data_type: integer
-        description: '{{ doc("device_screen_size") }}'
-      - name: device_os
+        description: '{{ doc("last_seen_device_screen_size") }}'
+      - name: last_seen_device_os
         data_type: string
-        description: '{{ doc("device_os") }}'
-      - name: device_os_version
+        description: '{{ doc("last_seen_device_os") }}'
+      - name: last_seen_device_os_version
         data_type: string
-        description: '{{ doc("device_os_version") }}'
-      - name: device_language
+        description: '{{ doc("last_seen_device_os_version") }}'
+      - name: last_seen_device_language
         data_type: string
-        description: '{{ doc("device_os_version") }}'
-      - name: tz_offset_hours
+        description: '{{ doc("last_seen_device_os_version") }}'
+      - name: last_seen_tz_offset_hours
         data_type: float
         description: ''
-      - name: location_country
+      - name: last_seen_location_country
         data_type: string
-        description: '{{ doc("location_country") }}'
-      - name: location_state
+        description: '{{ doc("last_seen_location_country") }}'
+      - name: last_seen_location_state
         data_type: string
-        description: '{{ doc("location_state") }}'
-      - name: location_city
+        description: '{{ doc("last_seen_location_state") }}'
+      - name: last_seen_location_city
         data_type: string
-        description: '{{ doc("location_city") }}'
+        description: '{{ doc("last_seen_location_city") }}'
       - name: last_seen_event
         data_type: string
         description: '{{ doc("last_seen_event") }}'

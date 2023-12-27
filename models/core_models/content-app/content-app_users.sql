@@ -7,7 +7,7 @@
             "data_type": "date",
             "granularity": "day",
         },
-        cluster_by=["app_family_name", "app_info_id", "device_model"],
+        cluster_by=["last_seen_app_info_id"],
     )
 }}
 
@@ -18,12 +18,9 @@ with
         from {{ source("content-app_prod", "events_*") }}
         {% if is_incremental() %}
             -- this filter will only be applied on an incremental run
-            -- will append/replace values for yesterday, and the previous 2 days only
             where
                 _table_suffix
-                between format_date('%Y%m%d', current_date() - 3) and format_date(
-                    '%Y%m%d', current_date()
-                )
+                between '{{ var("start_date") }}' and '{{ var("end_date") }}'
         {% else %} where _table_suffix between '20231001' and '20231031'
         {% endif %}
 
@@ -33,12 +30,9 @@ with
         from {{ source("content-app_tmobile_prod", "events_*") }}
         {% if is_incremental() %}
             -- this filter will only be applied on an incremental run
-            -- will append/replace values for yesterday, and the previous 2 days only
             where
                 _table_suffix
-                between format_date('%Y%m%d', current_date() - 3) and format_date(
-                    '%Y%m%d', current_date()
-                )
+                between '{{ var("start_date") }}' and '{{ var("end_date") }}'
         {% else %} where _table_suffix between '20231001' and '20231031'
         {% endif %}
     ),
@@ -47,15 +41,7 @@ with
     ),
 
     {% if is_incremental() %}
-        historic_user_core as (
-            select
-                user_pseudo_id,
-                acquisition_date,
-                app_version_first_seen_string,
-                app_version_first_seen_int,
-                activation_date
-            from {{ this }}
-        ),
+        historic_user_core as (select * from {{ this }}),
     {% endif %}
 
     selecting_raw_events as (
@@ -252,26 +238,26 @@ with
     latest_data as (
         select
             user_pseudo_id,
-            device_id,
-            sliide_backend_profile_id,
-            google_advertising_id,
-            app_info_id,
-            app_family_name,
-            app_version_string as app_version_last_seen_string,
-            app_version_int as app_version_last_seen_int,
-            install_source,
-            device_type,
-            device_make,
-            device_model,
-            device_screen_size_x,
-            device_screen_size_y,
-            device_os,
-            device_os_version,
-            device_language,
-            tz_offset_hours,
-            location_country,
-            location_state,
-            location_city,
+            device_id as last_seen_device_id,
+            sliide_backend_profile_id as last_seen_sliide_backend_profile_id,
+            google_advertising_id as last_seen_google_advertising_id,
+            app_info_id as last_seen_app_info_id,
+            app_family_name as last_seen_app_family_name,
+            app_version_string as last_seen_app_version_string,
+            app_version_int as last_seen_app_version_int,
+            install_source as last_seen_install_source,
+            device_type as last_seen_device_type,
+            device_make as last_seen_device_make,
+            device_model as last_seen_device_model,
+            device_screen_size_x as last_seen_device_screen_size_x,
+            device_screen_size_y as last_seen_device_screen_size_y,
+            device_os as last_seen_device_os,
+            device_os_version as last_seen_device_os_version,
+            device_language as last_seen_device_language,
+            tz_offset_hours as last_seen_tz_offset_hours,
+            location_country as last_seen_location_country,
+            location_state as last_seen_location_state,
+            location_city as last_seen_location_city,
             event_name as last_seen_event,
             timestamp_micros(event_timestamp) as last_seen_event_timestamp
         from int_events
@@ -280,8 +266,8 @@ with
     oldest_data as (
         select
             user_pseudo_id,
-            app_version_string as app_version_first_seen_string,
-            app_version_int as app_version_first_seen_int
+            app_version_string as first_seen_app_version_string,
+            app_version_int as first_seen_app_version_int
         from int_events
         inner join first_row using (user_pseudo_id, row_uid)
     ),
@@ -303,36 +289,62 @@ with
                 end as activation_date,
                 case
                     when his.acquisition_date < activity.acquisition_date
-                    then his.app_version_first_seen_string
-                    else oldest_data.app_version_first_seen_string
-                end as app_version_first_seen_string,
+                    then his.first_seen_app_version_string
+                    else oldest_data.first_seen_app_version_string
+                end as first_seen_app_version_string,
                 case
                     when his.acquisition_date < activity.acquisition_date
-                    then his.app_version_first_seen_int
-                    else oldest_data.app_version_first_seen_int
-                end as app_version_first_seen_int
+                    then his.first_seen_app_version_int
+                    else oldest_data.first_seen_app_version_int
+                end as first_seen_app_version_int,
+
+                {% set fields = [
+                    "last_seen_device_id",
+                    "last_seen_sliide_backend_profile_id",
+                    "last_seen_google_advertising_id",
+                    "last_seen_app_info_id",
+                    "last_seen_app_family_name",
+                    "last_seen_app_version_string",
+                    "last_seen_app_version_int",
+                    "last_seen_install_source",
+                    "last_seen_device_type",
+                    "last_seen_device_make",
+                    "last_seen_device_model",
+                    "last_seen_device_screen_size_x",
+                    "last_seen_device_screen_size_y",
+                    "last_seen_device_os",
+                    "last_seen_device_os_version",
+                    "last_seen_device_language",
+                    "last_seen_tz_offset_hours",
+                    "last_seen_location_country",
+                    "last_seen_location_state",
+                    "last_seen_location_city",
+                    "last_seen_event",
+                    "last_seen_event_timestamp",
+                ] %}
+                {% for field in fields %}
+                    case
+                        when his.last_seen_date > activity.last_seen_date
+                        then his.{{ field }}
+                        else latest_data.{{ field }}
+                    end as {{ field }}
+                    {% if not loop.last %}, {% endif %}
+                {% endfor %}
             from activity
             left join historic_user_core his using (user_pseudo_id)
             inner join oldest_data using (user_pseudo_id)
+            inner join latest_data using (user_pseudo_id)
         ),
     {% endif %}
 
     final as (
-        {% if is_incremental() %}
-            select
-                h.*,
-                l.* except (
-                    user_pseudo_id,
-                    app_version_first_seen_string,
-                    app_version_first_seen_int
-                )
-            from historic_compare h
+        {% if is_incremental() %} select h.* from historic_compare h
         {% else %}
             select a.*, l.* except (user_pseudo_id), o.* except (user_pseudo_id)
             from activity a
             inner join oldest_data o using (user_pseudo_id)
+            inner join latest_data l using (user_pseudo_id)
         {% endif %}
-        inner join latest_data l using (user_pseudo_id)
     )
 
 select
@@ -343,26 +355,26 @@ select
     last_active_date,
     last_seen_event,
     last_seen_event_timestamp,
-    app_family_name,
-    app_info_id,
-    app_version_first_seen_string,
-    app_version_first_seen_int,
-    app_version_last_seen_string,
-    app_version_last_seen_int,
-    device_id,
-    sliide_backend_profile_id,
-    google_advertising_id,
-    install_source,
-    device_type,
-    device_make,
-    device_model,
-    device_screen_size_x,
-    device_screen_size_y,
-    device_os,
-    device_os_version,
-    device_language,
-    tz_offset_hours,
-    location_country,
-    location_state,
-    location_city
+    last_seen_app_family_name,
+    last_seen_app_info_id,
+    first_seen_app_version_string,
+    first_seen_app_version_int,
+    last_seen_app_version_string,
+    last_seen_app_version_int,
+    last_seen_device_id,
+    last_seen_sliide_backend_profile_id,
+    last_seen_google_advertising_id,
+    last_seen_install_source,
+    last_seen_device_type,
+    last_seen_device_make,
+    last_seen_device_model,
+    last_seen_device_screen_size_x,
+    last_seen_device_screen_size_y,
+    last_seen_device_os,
+    last_seen_device_os_version,
+    last_seen_device_language,
+    last_seen_tz_offset_hours,
+    last_seen_location_country,
+    last_seen_location_state,
+    last_seen_location_city
 from final
