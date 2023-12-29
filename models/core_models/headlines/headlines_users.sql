@@ -35,18 +35,6 @@ with
                 between '{{ var("start_date") }}' and '{{ var("end_date") }}'
         {% else %} where _table_suffix between '20231001' and '20231031'
         {% endif %}
-
-        union all
-
-        select *
-        from {{ source("content-app_mid-tier_prod", "events_*") }}
-        {% if is_incremental() %}
-            -- this filter will only be applied on an incremental run
-            where
-                _table_suffix
-                between '{{ var("start_date") }}' and '{{ var("end_date") }}'
-        {% else %} where _table_suffix between '20231001' and '20231031'
-        {% endif %}
     ),
     active_events as (
         select product, event_name, is_active from {{ ref("event_config") }}

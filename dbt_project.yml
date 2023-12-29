@@ -31,7 +31,10 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   sliide_gbq:
     +materialized: view
+    KPIs:
+      +tags: "KPI"
 
+# Default variables, used if vars not specified elswhere
 vars:
   start_date: '20231201'
   end_date: '20231201'

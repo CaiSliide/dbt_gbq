@@ -1,0 +1,28 @@
+version: 2
+
+sources:
+  - name: newsandrewards
+    database: newsandrewards
+    schema: analytics_164881016
+    tables:
+      - name: events_*
+  
+  - name: onlineplus
+    database: onlineplus-b807a
+    schema: analytics_181030853  
+    tables:
+      - name: events_*
+
+  - name: qlixar
+    database: qlixar-5677b
+    schema: analytics_164881015  
+    tables:
+      - name: events_*
+
+  - name: sliide-newsfeed
+    database: sliide-newsfeed
+    schema: analytics_197178777
+    tables:
+      - name: events_*
+  
+
