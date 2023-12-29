@@ -1,6 +1,12 @@
 version: 2
 
 sources:
+  - name: content-app_mid-tier_prod
+    database: contentapp-mid-tier-prod
+    schema: analytics_355530182
+    tables:
+      - name: events_*
+  
   - name: content-app_prod
     database: content-apps-prod  
     schema: analytics_338029231  

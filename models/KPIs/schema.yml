@@ -7,6 +7,5 @@ models:
       columns:
           - name: event_date
             tests:
-                - unique
                 - not_null
 
