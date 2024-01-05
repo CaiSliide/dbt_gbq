@@ -22,11 +22,7 @@ with
             where
                 _table_suffix
                 between '{{ var("start_date") }}' and '{{ var("end_date") }}'
-        {% else %}
-            where
-                _table_suffix
-                -- between '20231001' and format_date('%Y%m%d', current_date())
-                between '20231001' and '20231031'
+        {% else %} where _table_suffix between '20221231' and '20221231'
         {% endif %}
 
         union all
@@ -38,11 +34,7 @@ with
             where
                 _table_suffix
                 between '{{ var("start_date") }}' and '{{ var("end_date") }}'
-        {% else %}
-            where
-                _table_suffix
-                -- between '20231001' and format_date('%Y%m%d', current_date())
-                between '20231001' and '20231031'
+        {% else %} where _table_suffix between '20221231' and '20221231'
         {% endif %}
 
         union all
@@ -54,11 +46,7 @@ with
             where
                 _table_suffix
                 between '{{ var("start_date") }}' and '{{ var("end_date") }}'
-        {% else %}
-            where
-                _table_suffix
-                -- between '20231001' and format_date('%Y%m%d', current_date())
-                between '20231001' and '20231031'
+        {% else %} where _table_suffix between '20221231' and '20221231'
         {% endif %}
     ),
     session_events as (
