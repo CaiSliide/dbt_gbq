@@ -1,330 +1,421 @@
-with
-    yesterday_cohort as (
-        select
-            acquisition_date,
-            user_pseudo_id,
-            app_family_name as product,
-            app_info_id as flavour,
-            app_version_first_seen_string as version,
-            device_model,
-            device_os_version as operating_system,
-            case when activation_date is null or activation_date > acquisition_date + 1 then false else true end as activated
-        from {{ ref("content-app_users") }}
-        where
-            acquisition_date < current_date() - 1
-    ),
-    minus7_cohort as (
-        select
-            acquisition_date,
-            user_pseudo_id,
-            app_family_name as product,
-            app_info_id as flavour,
-            app_version_first_seen_string as version,
-            device_model,
-            device_os_version as operating_system,
-            case when activation_date is null or activation_date > acquisition_date + 7 then false else true end as activated
-        from {{ ref("content-app_users") }}
-        where
-            acquisition_date < current_date() - 7
-    ),
-    minus28_cohort as (
-        select
-            acquisition_date,
-            user_pseudo_id,
-            app_family_name as product,
-            app_info_id as flavour,
-            app_version_first_seen_string as version,
-            device_model,
-            device_os_version as operating_system,
-            case when activation_date is null or activation_date > acquisition_date + 28 then false else true end as activated
-        from {{ ref("content-app_users") }}
-        where
-            acquisition_date < current_date() - 28
-    )
-
--- By Flavour breakdown
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    'total' as version,
-    'total' as device_model,
-    'total' as operating_system,
-    '-1 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from yesterday_cohort
-group by
+WITH
+  yesterday_cohort AS (
+  SELECT
     acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
-union all
-
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    'total' as version,
-    'total' as device_model,
-    'total' as operating_system,
-    '-7 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from minus7_cohort
-group by
+    user_pseudo_id,
+    last_seen_app_family_name AS product,
+    last_seen_app_info_id AS flavour,
+    first_seen_app_version_string AS version,
+    last_seen_device_model as device_model,
+    last_seen_device_os_version AS operating_system,
+    CASE
+      WHEN activation_date IS NULL OR activation_date > acquisition_date + 1 THEN FALSE
+    ELSE
+    TRUE
+  END
+    AS activated
+  FROM
+    {{ ref("content-app_users") }}
+  WHERE
+    acquisition_date < CURRENT_DATE() - 1 ),
+  minus7_cohort AS (
+  SELECT
     acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
-union all
-
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    'total' as version,
-    'total' as device_model,
-    'total' as operating_system,
-    '-28 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from minus28_cohort
-group by
+    user_pseudo_id,
+    last_seen_app_family_name AS product,
+    last_seen_app_info_id AS flavour,
+    first_seen_app_version_string AS version,
+    last_seen_device_model as device_model,
+    last_seen_device_os_version AS operating_system,
+    CASE
+      WHEN activation_date IS NULL OR activation_date > acquisition_date + 7 THEN FALSE
+    ELSE
+    TRUE
+  END
+    AS activated
+  FROM
+    {{ ref("content-app_users") }}
+  WHERE
+    acquisition_date < CURRENT_DATE() - 7 ),
+  minus28_cohort AS (
+  SELECT
     acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
--- By Flavour & Version breakdown
-union all
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    version,
-    'total' as device_model,
-    'total' as operating_system,
-    '-1 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from yesterday_cohort
-group by
-    acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
-union all
-
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    version,
-    'total' as device_model,
-    'total' as operating_system,
-    '-7 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from minus7_cohort
-group by
-    acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
-union all
-
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    version,
-    'total' as device_model,
-    'total' as operating_system,
-    '-28 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from minus28_cohort
-group by
-    acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
--- By Flavour & Version & Device breakdown
-union all
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    version,
-    device_model,
-    'total' as operating_system,
-    '-1 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from yesterday_cohort
-group by
-    acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
-union all
-
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    version,
-    device_model,
-    'total' as operating_system,
-    '-7 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from minus7_cohort
-group by
-    acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
-union all
-
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    version,
-    device_model,
-    'total' as operating_system,
-    '-28 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from minus28_cohort
-group by
-    acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
--- By Flavour & Version & OS breakdown
-union all
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    version,
-    'total' as device_model,
-    operating_system,
-    '-1 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from yesterday_cohort
-group by
-    acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
-union all
-
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    version,
-    'total' as device_model,
-    operating_system,
-    '-7 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from minus7_cohort
-group by
-    acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
-
-union all
-
-select
-    acquisition_date as date,
-    product,
-    flavour,
-    version,
-    'total' as device_model,
-    operating_system,
-    '-28 day' as cohort,
-    count(distinct user_pseudo_id) as acqusitions,
-    count(distinct case when activated is true then user_pseudo_id end) as activations,
-    count(distinct case when activated is true then user_pseudo_id end)
-    / count(distinct user_pseudo_id) as activation_rate
-from minus28_cohort
-group by
-    acquisition_date,
-    cohort,
-    product,
-    flavour,
-    version,
-    device_model,
-    operating_system
+    user_pseudo_id,
+    last_seen_app_family_name AS product,
+    last_seen_app_info_id AS flavour,
+    first_seen_app_version_string AS version,
+    last_seen_device_model as device_model,
+    last_seen_device_os_version AS operating_system,
+    CASE
+      WHEN activation_date IS NULL OR activation_date > acquisition_date + 28 THEN FALSE
+    ELSE
+    TRUE
+  END
+    AS activated
+  FROM
+    {{ ref("content-app_users") }}
+  WHERE
+    acquisition_date < CURRENT_DATE() - 28 )
+  -- By Flavour breakdown
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  'total' AS version,
+  'total' AS device_model,
+  'total' AS operating_system,
+  '-1 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  yesterday_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  'total' AS version,
+  'total' AS device_model,
+  'total' AS operating_system,
+  '-7 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  minus7_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  'total' AS version,
+  'total' AS device_model,
+  'total' AS operating_system,
+  '-28 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  minus28_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+  -- By Flavour & Version breakdown
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  version,
+  'total' AS device_model,
+  'total' AS operating_system,
+  '-1 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  yesterday_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  version,
+  'total' AS device_model,
+  'total' AS operating_system,
+  '-7 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  minus7_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  version,
+  'total' AS device_model,
+  'total' AS operating_system,
+  '-28 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  minus28_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+  -- By Flavour & Version & Device breakdown
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  version,
+  device_model,
+  'total' AS operating_system,
+  '-1 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  yesterday_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  version,
+  device_model,
+  'total' AS operating_system,
+  '-7 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  minus7_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  version,
+  device_model,
+  'total' AS operating_system,
+  '-28 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  minus28_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+  -- By Flavour & Version & OS breakdown
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  version,
+  'total' AS device_model,
+  operating_system,
+  '-1 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  yesterday_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  version,
+  'total' AS device_model,
+  operating_system,
+  '-7 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  minus7_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
+UNION ALL
+SELECT
+  acquisition_date AS date,
+  product,
+  flavour,
+  version,
+  'total' AS device_model,
+  operating_system,
+  '-28 day' AS cohort,
+  COUNT(DISTINCT user_pseudo_id) AS acqusitions,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) AS activations,
+  COUNT(DISTINCT
+    CASE
+      WHEN activated IS TRUE THEN user_pseudo_id
+  END
+    ) / COUNT(DISTINCT user_pseudo_id) AS activation_rate
+FROM
+  minus28_cohort
+GROUP BY
+  acquisition_date,
+  cohort,
+  product,
+  flavour,
+  version,
+  device_model,
+  operating_system
