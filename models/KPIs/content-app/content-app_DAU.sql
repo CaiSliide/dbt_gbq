@@ -1,6 +1,6 @@
 -- By Flavour breakdown
 select
-    session_start_date,
+    session_start_date as date,
     app_family_name as product,
     app_package_name as flavour,
     'total' as version,
@@ -18,7 +18,7 @@ group by
 -- By Flavour & Version breakdown
 union all
 select
-    session_start_date,
+    session_start_date as date,
     app_family_name as product,
     app_package_name as flavour,
     app_version_string as version,
@@ -37,7 +37,7 @@ group by
 -- By Flavour & Version & Device breakdown
 union all
 select
-    session_start_date,
+    session_start_date as date,
     app_family_name as product,
     app_package_name as flavour,
     app_version_string as version,
@@ -57,7 +57,7 @@ group by
 -- By Flavour & Version & OS breakdown
 union all
 select
-    session_start_date,
+    session_start_date as date,
     app_family_name as product,
     app_package_name as flavour,
     app_version_string as version,
