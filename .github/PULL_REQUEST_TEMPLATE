@@ -1,0 +1,15 @@
+### Ticket(s)
+
+Ticket:
+
+### What has been done
+
+* Description of main changes to code in bullet points
+*
+
+### Checklist
+
+- [ ] Have you run this in your developer env?
+- [ ] Do you know if/how this will be run on production env?
+- [ ] Have you added sufficient documentation to a YAML file?
+- [ ] Have you considered the impact this will have on the warehouse (compute + storage)?
