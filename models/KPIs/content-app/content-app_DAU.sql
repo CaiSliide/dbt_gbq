@@ -1,3 +1,4 @@
+
 -- By Flavour breakdown
 select
     session_start_date as date,

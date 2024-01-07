@@ -14,39 +14,27 @@
 
 with
     raw_events as (
-        select *
-        from {{ source("content-app_prod", "events_*") }}
-        {% if is_incremental() %}
-            -- this filter will only be applied on an incremental run
-            where
-                _table_suffix
-                between '{{ var("start_date") }}' and '{{ var("end_date") }}'
-        {% else %} where _table_suffix between '20221231' and '20221231'
-        {% endif %}
 
-        union all
+        {% set contentapp_sources = [
+            "content-app_prod",
+            "content-app_tmobile_prod",
+            "content-app_mid-tier_prod",
+        ] %}
+        {% for contentapp_source in contentapp_sources %}
+            select *
+            from {{ source(contentapp_source, "events_*") }}
+            {% if is_incremental() %}
+                -- this filter will only be applied on an incremental run
+                where
+                    _table_suffix
+                    between '{{ var("start_date") }}' and '{{ var("end_date") }}'
+            {% else %} where _table_suffix between '20221231' and '20221231'
+            {% endif %}
+            {% if not loop.last %}
+                union all
+            {% endif %}
+        {% endfor %}
 
-        select *
-        from {{ source("content-app_tmobile_prod", "events_*") }}
-        {% if is_incremental() %}
-            -- this filter will only be applied on an incremental run
-            where
-                _table_suffix
-                between '{{ var("start_date") }}' and '{{ var("end_date") }}'
-        {% else %} where _table_suffix between '20221231' and '20221231'
-        {% endif %}
-
-        union all
-
-        select *
-        from {{ source("content-app_mid-tier_prod", "events_*") }}
-        {% if is_incremental() %}
-            -- this filter will only be applied on an incremental run
-            where
-                _table_suffix
-                between '{{ var("start_date") }}' and '{{ var("end_date") }}'
-        {% else %} where _table_suffix between '20221231' and '20221231'
-        {% endif %}
     ),
     active_events as (
         select product, event_name, is_active from {{ ref("event_config") }}
@@ -350,7 +338,7 @@ with
     {% endif %}
 
     final as (
-        {% if is_incremental() %} select h.* from historic_compare h
+        {% if is_incremental() %}select h.* from historic_compare h
         {% else %}
             select a.*, l.* except (user_pseudo_id), o.* except (user_pseudo_id)
             from activity a
