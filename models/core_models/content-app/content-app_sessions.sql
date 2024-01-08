@@ -118,7 +118,7 @@ with
                 between parse_date('%Y%m%d', '{{ var("start_date") }}') and parse_date(
                     '%Y%m%d', '{{ var("end_date") }}'
                 )
-        {% else %} where event_date between '2022-12-31' and '2022-12-31'
+        {% else %} where event_date between '2023-09-01' and '2023-12-31'
         {% endif %}
 
         group by session_id

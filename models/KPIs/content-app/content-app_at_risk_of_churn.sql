@@ -1,114 +1,252 @@
 with
-    base as (
-        select distinct
+    base_0_to_28_day_users as (
+        select
             user_pseudo_id,
-            session_start_date,
-            app_family_name as app_family_name,
+            app_family_name,
+            app_package_name,
+            app_version_string,
+            device_model,
+            device_os_version,
+            max(session_start_date) as max_date
+        from {{ ref("content-app_sessions") }}
+        where
+            is_active_session is true
+            and session_start_date
+            between date_sub(current_date(), interval 27 day) and current_date()
+        group by
+            user_pseudo_id,
+            app_family_name,
             app_package_name,
             app_version_string,
             device_model,
             device_os_version
-        from {{ ref("content-app_sessions") }}
-        where
-            is_active_session is true
-            and session_start_date between '2023-10-01' and '2023-10-30'
     )
 
 -- By Flavour breakdown
 select
-    DATE_SUB(base.session_start_date, INTERVAL 6 DAY) as week_start,
-    base.session_start_date as week_end,
-    base.app_family_name as product,
-    base.app_package_name as flavour,
+    current_date() as date,
+    app_family_name as product,
+    app_package_name as flavour,
     'total' as version,
     'total' as device_model,
     'total' as operating_system,
-    count(base.user_pseudo_id) as wau
-from base
-join
-    base b2
-    on b2.session_start_date between date_sub(
-        base.session_start_date, interval 6 day
-    ) and base.session_start_date
-    and base.app_family_name = b2.app_family_name
-    and base.app_package_name = b2.app_package_name
-    and base.user_pseudo_id = b2.user_pseudo_id
-where
-    EXTRACT(DAYOFWEEK FROM base.session_start_date) = 1
-group by base.session_start_date, base.app_family_name, base.app_package_name
+    count(distinct user_pseudo_id) as non_churned_users,
+    {% set at_risk_churn_intervals = [
+        {"name": "3_to_6", "start": 3, "end": 6},
+        {"name": "7_to_13", "start": 7, "end": 13},
+        {"name": "14_to_20", "start": 14, "end": 20},
+        {"name": "21_to_27", "start": 21, "end": 27},
+    ] %}
+    {% for at_risk_churn_interval in at_risk_churn_intervals %}
+        count(
+            distinct case
+                when
+                    max_date
+                    between date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["end"] }} day
+                    ) and date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["start"] }} day
+                    )
+                then user_pseudo_id
+            end
+        ) as at_risk_to_churn_{{ at_risk_churn_interval["name"] }},
+        count(
+            distinct case
+                when
+                    max_date
+                    between date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["end"] }} day
+                    ) and date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["start"] }} day
+                    )
+                then user_pseudo_id
+            end
+        )
+        / count(distinct user_pseudo_id)
+        * 100 as at_risk_to_churn_{{ at_risk_churn_interval["name"] }}_percent
+        {% if not loop.last %}, {% endif %}
+    {% endfor %}
 
- -- By Flavour & Version breakdown
+from base_0_to_28_day_users
+group by
+    date,
+    product,
+    flavour
+
 union all
+    -- -- By Flavour & Version breakdown
 select
-    DATE_SUB(base.session_start_date, INTERVAL 6 DAY) as week_start,
-    base.session_start_date as week_end,
-    base.app_family_name as product,
-    base.app_package_name as flavour,
-    base.app_version_string as version,
+    current_date() as date,
+    app_family_name as product,
+    app_package_name as flavour,
+    app_version_string as version,
     'total' as device_model,
     'total' as operating_system,
-    count(base.user_pseudo_id) as wau
-from base
-join
-    base b2
-    on b2.session_start_date between date_sub(
-        base.session_start_date, interval 6 day
-    ) and base.session_start_date
-    and base.app_family_name = b2.app_family_name
-    and base.app_package_name = b2.app_package_name
-    and base.user_pseudo_id = b2.user_pseudo_id
-    and base.app_version_string = b2.app_version_string
-where
-    EXTRACT(DAYOFWEEK FROM base.session_start_date) = 1
-group by base.session_start_date, base.app_family_name, base.app_package_name, base.app_version_string
+    count(distinct user_pseudo_id) as non_churned_users,
+    {% set at_risk_churn_intervals = [
+        {"name": "3_to_6", "start": 3, "end": 6},
+        {"name": "7_to_13", "start": 7, "end": 13},
+        {"name": "14_to_20", "start": 14, "end": 20},
+        {"name": "21_to_27", "start": 21, "end": 27},
+    ] %}
+    {% for at_risk_churn_interval in at_risk_churn_intervals %}
+        count(
+            distinct case
+                when
+                    max_date
+                    between date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["end"] }} day
+                    ) and date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["start"] }} day
+                    )
+                then user_pseudo_id
+            end
+        ) as at_risk_to_churn_{{ at_risk_churn_interval["name"] }},
+        count(
+            distinct case
+                when
+                    max_date
+                    between date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["end"] }} day
+                    ) and date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["start"] }} day
+                    )
+                then user_pseudo_id
+            end
+        )
+        / count(distinct user_pseudo_id)
+        * 100 as at_risk_to_churn_{{ at_risk_churn_interval["name"] }}_percent
+        {% if not loop.last %}, {% endif %}
+    {% endfor %}
 
--- By Flavour & Version & Device breakdown
-    union all
-select
-    DATE_SUB(base.session_start_date, INTERVAL 6 DAY) as week_start,
-    base.session_start_date as week_end,
-    base.app_family_name as product,
-    base.app_package_name as flavour,
-    base.app_version_string as version,
-    base.device_model,
-    'total' as operating_system,
-    count(base.user_pseudo_id) as wau
-from base
-join
-    base b2
-    on b2.session_start_date between date_sub(
-        base.session_start_date, interval 6 day
-    ) and base.session_start_date
-    and base.app_family_name = b2.app_family_name
-    and base.app_package_name = b2.app_package_name
-    and base.user_pseudo_id = b2.user_pseudo_id
-    and base.app_version_string = b2.app_version_string
-    and base.device_model = b2.device_model
-where
-    EXTRACT(DAYOFWEEK FROM base.session_start_date) = 1
-group by base.session_start_date, base.app_family_name, base.app_package_name, base.app_version_string, base.device_model
--- By Flavour & Version & OS breakdown
+from base_0_to_28_day_users
+group by
+    date,
+    product,
+    flavour,
+    version
+
 union all
+    -- -- By Flavour & Version & Device breakdown
 select
-    DATE_SUB(base.session_start_date, INTERVAL 6 DAY) as week_start,
-    base.session_start_date as week_end,
-    base.app_family_name as product,
-    base.app_package_name as flavour,
-    base.app_version_string as version,
+    current_date() as date,
+    app_family_name as product,
+    app_package_name as flavour,
+    app_version_string as version,
+    device_model,
+    'total' as operating_system,
+    count(distinct user_pseudo_id) as non_churned_users,
+    {% set at_risk_churn_intervals = [
+        {"name": "3_to_6", "start": 3, "end": 6},
+        {"name": "7_to_13", "start": 7, "end": 13},
+        {"name": "14_to_20", "start": 14, "end": 20},
+        {"name": "21_to_27", "start": 21, "end": 27},
+    ] %}
+    {% for at_risk_churn_interval in at_risk_churn_intervals %}
+        count(
+            distinct case
+                when
+                    max_date
+                    between date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["end"] }} day
+                    ) and date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["start"] }} day
+                    )
+                then user_pseudo_id
+            end
+        ) as at_risk_to_churn_{{ at_risk_churn_interval["name"] }},
+        count(
+            distinct case
+                when
+                    max_date
+                    between date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["end"] }} day
+                    ) and date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["start"] }} day
+                    )
+                then user_pseudo_id
+            end
+        )
+        / count(distinct user_pseudo_id)
+        * 100 as at_risk_to_churn_{{ at_risk_churn_interval["name"] }}_percent
+        {% if not loop.last %}, {% endif %}
+    {% endfor %}
+
+from base_0_to_28_day_users
+group by
+    date,
+    product,
+    flavour,
+    version,
+    device_model
+
+union all
+    -- -- By Flavour & Version & OS breakdown
+select
+    current_date() as date,
+    app_family_name as product,
+    app_package_name as flavour,
+    app_version_string as version,
     'total' as device_model,
-    base.device_os_version as operating_system,
-    count(base.user_pseudo_id) as wau
-from base
-join
-    base b2
-    on b2.session_start_date between date_sub(
-        base.session_start_date, interval 6 day
-    ) and base.session_start_date
-    and base.app_family_name = b2.app_family_name
-    and base.app_package_name = b2.app_package_name
-    and base.user_pseudo_id = b2.user_pseudo_id
-    and base.app_version_string = b2.app_version_string
-    and base.device_os_version = b2.device_os_version
-where
-    EXTRACT(DAYOFWEEK FROM base.session_start_date) = 1
-group by base.session_start_date, base.app_family_name, base.app_package_name, base.app_version_string, base.device_os_version
+    device_os_version as operating_system,
+    count(distinct user_pseudo_id) as non_churned_users,
+    {% set at_risk_churn_intervals = [
+        {"name": "3_to_6", "start": 3, "end": 6},
+        {"name": "7_to_13", "start": 7, "end": 13},
+        {"name": "14_to_20", "start": 14, "end": 20},
+        {"name": "21_to_27", "start": 21, "end": 27},
+    ] %}
+    {% for at_risk_churn_interval in at_risk_churn_intervals %}
+        count(
+            distinct case
+                when
+                    max_date
+                    between date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["end"] }} day
+                    ) and date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["start"] }} day
+                    )
+                then user_pseudo_id
+            end
+        ) as at_risk_to_churn_{{ at_risk_churn_interval["name"] }},
+        count(
+            distinct case
+                when
+                    max_date
+                    between date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["end"] }} day
+                    ) and date_sub(
+                        current_date(),
+                        interval {{ at_risk_churn_interval["start"] }} day
+                    )
+                then user_pseudo_id
+            end
+        )
+        / count(distinct user_pseudo_id)
+        * 100 as at_risk_to_churn_{{ at_risk_churn_interval["name"] }}_percent
+        {% if not loop.last %}, {% endif %}
+    {% endfor %}
+
+from base_0_to_28_day_users
+group by
+    date,
+    product,
+    flavour,
+    version,
+    operating_system
+    
