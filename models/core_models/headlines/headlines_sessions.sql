@@ -69,7 +69,7 @@ with base as (
                 event_date between (current_date() - 3) and current_date()
         {% else %}
             where
-                event_date between '2023-10-01' and '2023-10-31'
+                event_date between '2023-09-01' and '2023-12-31'
         {% endif %}
 
     group by
