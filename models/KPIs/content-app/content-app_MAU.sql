@@ -11,7 +11,6 @@ with
         from {{ ref("content-app_sessions") }}
         where
             is_active_session is true
-            and session_start_date between '2023-10-01' and '2023-10-30'
     )
 
 -- By Flavour breakdown
