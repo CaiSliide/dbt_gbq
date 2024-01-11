@@ -34,7 +34,7 @@ with
                 where
                     _table_suffix
                     -- between '20231001' and format_date('%Y%m%d', current_date())
-                    between '20231001' and '20231001'
+                    between '20230831' and '20230831'
             {% endif %}
             {% if not loop.last %}
                 union all

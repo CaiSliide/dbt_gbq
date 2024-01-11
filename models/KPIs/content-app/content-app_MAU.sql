@@ -23,7 +23,7 @@ select
     'total' as version,
     'total' as device_model,
     'total' as operating_system,
-    count(base.user_pseudo_id) as wau
+    count(base.user_pseudo_id) as mau
 from base
 join
     base b2
@@ -47,7 +47,7 @@ select
     base.app_version_string as version,
     'total' as device_model,
     'total' as operating_system,
-    count(base.user_pseudo_id) as wau
+    count(base.user_pseudo_id) as mau
 from base
 join
     base b2
@@ -72,7 +72,7 @@ select
     base.app_version_string as version,
     base.device_model,
     'total' as operating_system,
-    count(base.user_pseudo_id) as wau
+    count(base.user_pseudo_id) as mau
 from base
 join
     base b2
@@ -97,7 +97,7 @@ select
     base.app_version_string as version,
     'total' as device_model,
     base.device_os_version as operating_system,
-    count(base.user_pseudo_id) as wau
+    count(base.user_pseudo_id) as mau
 from base
 join
     base b2
