@@ -3,7 +3,7 @@ with
         select user_pseudo_id, activation_date
         from {{ ref("content-app_users") }}
         -- where activation_date between '2023-11-01' and '2023-11-30'
-        where activation_date is not null
+        where activation_date >= '2023-09-01'
     ),
     session_base as (
         select distinct
