@@ -33,6 +33,8 @@ with
             {% endif %}
             {% if not loop.last %}
                 union all
+            {% else %}
+                {% if env_var("DBT_ENVIROMENT") == "Development" %} limit 10000 {% endif %}
             {% endif %}
         {% endfor %}
 
