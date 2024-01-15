@@ -32,6 +32,8 @@ with
             {% endif %}
             {% if not loop.last %}
                 union all
+            {% else %}
+                {% if env_var("DBT_ENVIROMENT") == "Development" %} limit 10000 {% endif %}
             {% endif %}
         {% endfor %}
 
@@ -113,8 +115,8 @@ with
         select
             app_package_name,
             product,
-            version_from,
-            version_to
+            version_from_num_short,
+            version_to_num_short
         from {{ ref('client_mapping_events_unified') }}
     ),
     last_row as (
@@ -171,7 +173,7 @@ with
         left join
             cm
             on raw.app_info_id = cm.app_package_name
-            and raw.app_version_int between cm.version_from and cm.version_to
+            and raw.app_version_int between cm.version_from_num_short and cm.version_to_num_short
         left join
             active_events ae
             on raw.event_name = ae.event_name
