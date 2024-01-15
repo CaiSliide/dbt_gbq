@@ -113,57 +113,9 @@ with
         select
             app_package_name,
             product,
-            cast(
-                replace(
-                    case
-                        when regexp_contains(version_from, r'[0-9]+\.[0-9]+\.[0-9]+')
-                        then
-                            concat(
-                                lpad(split(version_from, '.')[offset (0)], 3, '0'),
-                                '.',
-                                lpad(split(version_from, '.')[offset (1)], 3, '0'),
-                                '.',
-                                lpad(
-                                    regexp_replace(
-                                        split(version_from, '.')[offset (2)],
-                                        r'[^0-9](.*)',
-                                        ''
-                                    ),
-                                    3,
-                                    '0'
-                                )
-                            )
-                    end,
-                    '.',
-                    ''
-                ) as int64
-            ) version_from,
-            cast(
-                replace(
-                    case
-                        when regexp_contains(version_to, r'[0-9]+\.[0-9]+\.[0-9]+')
-                        then
-                            concat(
-                                lpad(split(version_to, '.')[offset (0)], 3, '0'),
-                                '.',
-                                lpad(split(version_to, '.')[offset (1)], 3, '0'),
-                                '.',
-                                lpad(
-                                    regexp_replace(
-                                        split(version_to, '.')[offset (2)],
-                                        r'[^0-9](.*)',
-                                        ''
-                                    ),
-                                    3,
-                                    '0'
-                                )
-                            )
-                    end,
-                    '.',
-                    ''
-                ) as int64
-            ) version_to
-        from {{ ref("client_mapping_events") }}
+            version_from,
+            version_to
+        from {{ ref('client_mapping_events_unified') }}
     ),
     last_row as (
         select distinct
