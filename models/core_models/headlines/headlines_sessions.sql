@@ -45,7 +45,7 @@ with base as (
         , max(ec.is_active) is_active_session
     from
         {{ ref("headlines_events") }} c
-        left join {{ ref("client_mapping_events_version") }} cm
+        left join {{ ref("client_mapping_events_unified") }} cm
             on lower(trim(c.app_info_id)) = cm.app_package_name
             and cast(replace(case
                 when

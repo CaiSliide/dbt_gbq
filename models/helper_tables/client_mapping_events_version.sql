@@ -61,7 +61,7 @@ with
                 || lpad(split(version_to, '.')[offset(1)], 3, '0')
                 || lpad(split(version_to, '.')[offset(2)], 3, '0') as integer
             ) as version_to_num_long
-        from {{ ref("client_mapping_events") }}
+        from {{ ref("client_mapping_events_unified") }}
     ),
     client_mapping_non_events as (
         select
