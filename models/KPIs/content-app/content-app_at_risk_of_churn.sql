@@ -32,10 +32,10 @@ select
     'total' as operating_system,
     count(distinct user_pseudo_id) as non_churned_users,
     {% set at_risk_churn_intervals = [
-        {"name": "3_to_6", "start": 3, "end": 6},
-        {"name": "7_to_13", "start": 7, "end": 13},
-        {"name": "14_to_20", "start": 14, "end": 20},
-        {"name": "21_to_27", "start": 21, "end": 27},
+        {"name": "3_to_6_days_ago", "start": 3, "end": 6},
+        {"name": "7_to_13_days_ago", "start": 7, "end": 13},
+        {"name": "14_to_20_days_ago", "start": 14, "end": 20},
+        {"name": "21_to_27_days_ago", "start": 21, "end": 27},
     ] %}
     {% for at_risk_churn_interval in at_risk_churn_intervals %}
         count(
@@ -51,7 +51,7 @@ select
                     )
                 then user_pseudo_id
             end
-        ) as at_risk_to_churn_{{ at_risk_churn_interval["name"] }},
+        ) as last_activity_{{ at_risk_churn_interval["name"] }},
         count(
             distinct case
                 when
@@ -67,18 +67,15 @@ select
             end
         )
         / count(distinct user_pseudo_id)
-        * 100 as at_risk_to_churn_{{ at_risk_churn_interval["name"] }}_percent
+        * 100 as last_activity_{{ at_risk_churn_interval["name"] }}_percent
         {% if not loop.last %}, {% endif %}
     {% endfor %}
 
 from base_0_to_28_day_users
-group by
-    date,
-    product,
-    flavour
+group by date, product, flavour
 
 union all
-    -- -- By Flavour & Version breakdown
+-- -- By Flavour & Version breakdown
 select
     current_date() as date,
     app_family_name as product,
@@ -88,10 +85,10 @@ select
     'total' as operating_system,
     count(distinct user_pseudo_id) as non_churned_users,
     {% set at_risk_churn_intervals = [
-        {"name": "3_to_6", "start": 3, "end": 6},
-        {"name": "7_to_13", "start": 7, "end": 13},
-        {"name": "14_to_20", "start": 14, "end": 20},
-        {"name": "21_to_27", "start": 21, "end": 27},
+        {"name": "3_to_6_days_ago", "start": 3, "end": 6},
+        {"name": "7_to_13_days_ago", "start": 7, "end": 13},
+        {"name": "14_to_20_days_ago", "start": 14, "end": 20},
+        {"name": "21_to_27_days_ago", "start": 21, "end": 27},
     ] %}
     {% for at_risk_churn_interval in at_risk_churn_intervals %}
         count(
@@ -107,7 +104,7 @@ select
                     )
                 then user_pseudo_id
             end
-        ) as at_risk_to_churn_{{ at_risk_churn_interval["name"] }},
+        ) as last_activity_{{ at_risk_churn_interval["name"] }},
         count(
             distinct case
                 when
@@ -123,19 +120,15 @@ select
             end
         )
         / count(distinct user_pseudo_id)
-        * 100 as at_risk_to_churn_{{ at_risk_churn_interval["name"] }}_percent
+        * 100 as last_activity_{{ at_risk_churn_interval["name"] }}_percent
         {% if not loop.last %}, {% endif %}
     {% endfor %}
 
 from base_0_to_28_day_users
-group by
-    date,
-    product,
-    flavour,
-    version
+group by date, product, flavour, version
 
 union all
-    -- -- By Flavour & Version & Device breakdown
+-- -- By Flavour & Version & Device breakdown
 select
     current_date() as date,
     app_family_name as product,
@@ -145,10 +138,10 @@ select
     'total' as operating_system,
     count(distinct user_pseudo_id) as non_churned_users,
     {% set at_risk_churn_intervals = [
-        {"name": "3_to_6", "start": 3, "end": 6},
-        {"name": "7_to_13", "start": 7, "end": 13},
-        {"name": "14_to_20", "start": 14, "end": 20},
-        {"name": "21_to_27", "start": 21, "end": 27},
+        {"name": "3_to_6_days_ago", "start": 3, "end": 6},
+        {"name": "7_to_13_days_ago", "start": 7, "end": 13},
+        {"name": "14_to_20_days_ago", "start": 14, "end": 20},
+        {"name": "21_to_27_days_ago", "start": 21, "end": 27},
     ] %}
     {% for at_risk_churn_interval in at_risk_churn_intervals %}
         count(
@@ -164,7 +157,7 @@ select
                     )
                 then user_pseudo_id
             end
-        ) as at_risk_to_churn_{{ at_risk_churn_interval["name"] }},
+        ) as last_activity_{{ at_risk_churn_interval["name"] }},
         count(
             distinct case
                 when
@@ -180,20 +173,15 @@ select
             end
         )
         / count(distinct user_pseudo_id)
-        * 100 as at_risk_to_churn_{{ at_risk_churn_interval["name"] }}_percent
+        * 100 as last_activity_{{ at_risk_churn_interval["name"] }}_percent
         {% if not loop.last %}, {% endif %}
     {% endfor %}
 
 from base_0_to_28_day_users
-group by
-    date,
-    product,
-    flavour,
-    version,
-    device_model
+group by date, product, flavour, version, device_model
 
 union all
-    -- -- By Flavour & Version & OS breakdown
+-- -- By Flavour & Version & OS breakdown
 select
     current_date() as date,
     app_family_name as product,
@@ -203,10 +191,10 @@ select
     device_os_version as operating_system,
     count(distinct user_pseudo_id) as non_churned_users,
     {% set at_risk_churn_intervals = [
-        {"name": "3_to_6", "start": 3, "end": 6},
-        {"name": "7_to_13", "start": 7, "end": 13},
-        {"name": "14_to_20", "start": 14, "end": 20},
-        {"name": "21_to_27", "start": 21, "end": 27},
+        {"name": "3_to_6_days_ago", "start": 3, "end": 6},
+        {"name": "7_to_13_days_ago", "start": 7, "end": 13},
+        {"name": "14_to_20_days_ago", "start": 14, "end": 20},
+        {"name": "21_to_27_days_ago", "start": 21, "end": 27},
     ] %}
     {% for at_risk_churn_interval in at_risk_churn_intervals %}
         count(
@@ -222,7 +210,7 @@ select
                     )
                 then user_pseudo_id
             end
-        ) as at_risk_to_churn_{{ at_risk_churn_interval["name"] }},
+        ) as last_activity_{{ at_risk_churn_interval["name"] }},
         count(
             distinct case
                 when
@@ -238,15 +226,9 @@ select
             end
         )
         / count(distinct user_pseudo_id)
-        * 100 as at_risk_to_churn_{{ at_risk_churn_interval["name"] }}_percent
+        * 100 as last_activity_{{ at_risk_churn_interval["name"] }}_percent
         {% if not loop.last %}, {% endif %}
     {% endfor %}
 
 from base_0_to_28_day_users
-group by
-    date,
-    product,
-    flavour,
-    version,
-    operating_system
-    
+group by date, product, flavour, version, operating_system
