@@ -115,9 +115,12 @@ with
         {% if is_incremental() %}
             where
                 event_date
-                between parse_date('%Y%m%d', '{{ var("start_date") }}') and parse_date(
-                    '%Y%m%d', '{{ var("end_date") }}'
-                )
+                {% if env_var("DBT_ENVIROMENT") == "Development" %} = current_date() - 2
+                {% else %}
+                    between parse_date(
+                        '%Y%m%d', '{{ var("start_date") }}'
+                    ) and parse_date('%Y%m%d', '{{ var("end_date") }}'
+                {% endif %}
         {% else %} where event_date between '2023-09-01' and '2023-12-31'
         {% endif %}
 
