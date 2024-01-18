@@ -27,7 +27,11 @@ with
                 -- this filter will only be applied on an incremental run
                 where
                     _table_suffix
-                    between '{{ var("start_date") }}' and '{{ var("end_date") }}'
+                    {% if env_var("DBT_ENVIROMENT") == "Development" %}
+                        =  FORMAT_DATE('%Y%m%d', current_date() - 2)
+                    {% else %}
+                        between '{{ var("start_date") }}' and '{{ var("end_date") }}'
+                    {% endif %}
             {% else %} where _table_suffix between '20221231' and '20221231'
             {% endif %}
             {% if not loop.last %}

@@ -28,13 +28,18 @@ with
                 -- this filter will only be applied on an incremental run
                 where
                     _table_suffix
-                    between '{{ var("start_date") }}' and '{{ var("end_date") }}'
+                    {% if env_var("DBT_ENVIROMENT") == "Development" %}
+                        =  FORMAT_DATE('%Y%m%d', current_date() - 2)
+                    {% else %}
+                        between '{{ var("start_date") }}' and '{{ var("end_date") }}'
+                    {% endif %}
             {% else %} where _table_suffix between '20230831' and '20230831'
             {% endif %}
             {% if not loop.last %}
                 union all
             {% else %}
-                {% if env_var("DBT_ENVIROMENT") == "Development" %} limit 10000 {% endif %}
+                {% if env_var("DBT_ENVIROMENT") == "Development" %} limit 10000
+                {% endif %}
             {% endif %}
         {% endfor %}
 
