@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: sliide-grip-prod
+    database: sliide-grip-prod
+    schema: scratchpad
+    tables:
+      - name: cai_test_scd_source
+  
